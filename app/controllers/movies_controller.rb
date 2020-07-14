@@ -1,8 +1,12 @@
 class MoviesController < ApplicationController
-  helper_method :selected_col?
+  helper_method :selected_col?, :selected_rating?
 
   def selected_col? col
     params[:sort] == col.to_s ? 'hilite' : ''
+  end
+
+  def selected_rating? rating
+    params[:ratings] and params[:ratings].key? rating
   end
 
   def movie_params
@@ -16,6 +20,7 @@ class MoviesController < ApplicationController
   end
 
   def index
+    puts params
     @movies = Movie.all.order(params[:sort])
     @all_ratings = Movie.all_ratings
   end
