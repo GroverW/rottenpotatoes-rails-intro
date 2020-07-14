@@ -1,4 +1,9 @@
 class MoviesController < ApplicationController
+  helper_method :selected_col?
+
+  def selected_col? col
+    params[:sort] == col.to_s ? 'hilite' : ''
+  end
 
   def movie_params
     params.require(:movie).permit(:sort, :title, :rating, :description, :release_date)
