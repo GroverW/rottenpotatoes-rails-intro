@@ -1,16 +1,23 @@
 class MoviesController < ApplicationController
-  helper_method :selected_col?, :selected_rating?
-
-  def selected_col? col
-    params[:sort] == col.to_s ? 'hilite' : ''
-  end
-
-  def selected_rating? rating
-    not params[:ratings] or params[:ratings].key? rating
-  end
-
   def movie_params
     params.require(:movie).permit(:sort, :title, :rating, :description, :release_date)
+  end
+  
+  helper_method :selected_col?, :selected_rating?
+
+  def selected_col? col; params[:sort] == col.to_s ? 'hilite' : ''; end
+
+  def selected_rating? rating; not params[:ratings] or params[:ratings].key? rating; end
+
+  def updating_params *keys
+    is_malformed = false
+
+    keys.each do |key|
+      is_malformed = true if session[key] && (not params[key])
+      session[key] = params[key] if params[key]
+    end
+
+    is_malformed
   end
 
   def show
@@ -20,7 +27,11 @@ class MoviesController < ApplicationController
   end
 
   def index
-    puts params
+    if updating_params :ratings, :sort
+      flash.keep
+      redirect_to movies_path(ratings: session[:ratings], sort: session[:sort])
+    end
+    
     @movies = Movie.with_ratings(params[:ratings]).order(params[:sort])
     @all_ratings = Movie.all_ratings
   end
