@@ -9,7 +9,7 @@ class MoviesController < ApplicationController
 
   def selected_rating? rating; not params[:ratings] or params[:ratings].key? rating; end
 
-  def updating_params *keys
+  def update_params path, *keys
     is_malformed = false
 
     keys.each do |key|
@@ -17,7 +17,11 @@ class MoviesController < ApplicationController
       session[key] = params[key] if params[key]
     end
 
-    is_malformed
+    if is_malformed
+      new_params = keys.map { |key| [key, session[key]] }.to_h
+      flash.keep
+      redirect_to method(path).call(new_params)
+    end
   end
 
   def show
@@ -27,10 +31,7 @@ class MoviesController < ApplicationController
   end
 
   def index
-    if updating_params :ratings, :sort
-      flash.keep
-      redirect_to movies_path(ratings: session[:ratings], sort: session[:sort])
-    end
+    update_params :movies_path, :ratings, :sort
     
     @movies = Movie.with_ratings(params[:ratings]).order(params[:sort])
     @all_ratings = Movie.all_ratings
