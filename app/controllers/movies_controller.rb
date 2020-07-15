@@ -6,7 +6,7 @@ class MoviesController < ApplicationController
   end
 
   def selected_rating? rating
-    params[:ratings] and params[:ratings].key? rating
+    not params[:ratings] or params[:ratings].key? rating
   end
 
   def movie_params
